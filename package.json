@@ -1,6 +1,6 @@
 {
   "name": "gladys-loxone",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Gladys Assistant external integration for the Loxone Miniserver (Gen 1 and Gen 2). Unofficial, not affiliated with Loxone.",
   "type": "module",
