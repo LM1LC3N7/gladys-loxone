@@ -1,67 +1,131 @@
-# Template de démonstration
+# Miniserver Loxone
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Cette intégration relie Gladys à **votre Miniserver Loxone** (Gen 1 ou Gen 2,
+firmware 11.2 ou plus récent) sur votre réseau local et propose ses blocs
+dans l'onglet **Découverte** de Gladys : interrupteurs, variateurs,
+contrôleurs d'éclairage avec leurs ambiances et leurs circuits, stores et
+rideaux, portails, fenêtres motorisées, régulateurs de pièce intelligents,
+états virtuels, compteurs et détecteurs de présence. Une fois un appareil
+ajouté, ses états suivent le Miniserver en direct, et Gladys le pilote **à
+travers le Miniserver**, qui continue de tourner : votre programme Loxone
+Config, votre application Loxone et vos automatismes restent tels quels. Non
+officiel, sans lien avec Loxone.
+
+> **Version de développement (0.1).** Écrite d'après la documentation de
+> l'API Loxone et construite sur la bibliothèque loxone-ts-api, pas encore
+> testée sur un vrai Miniserver. Vos retours sont les bienvenus sur le dépôt
+> GitHub.
+
+## Mise en route
+
+1. **Créez un utilisateur pour Gladys** dans Loxone Config (Utilisateurs et
+   droits), avec un mot de passe, et donnez-lui les pièces et les blocs que
+   Gladys peut voir et piloter. Un utilisateur dédié est conseillé : Gladys
+   voit exactement ce que cet utilisateur voit, et vous pouvez le révoquer
+   sans toucher à votre propre compte. Enregistrez le programme dans le
+   Miniserver.
+2. Trouvez l'**adresse IP** du Miniserver (Loxone Config, ou votre box
+   internet) et donnez-lui une adresse fixe dans votre box.
+3. Dans Gladys, ouvrez **Intégrations → Loxone Miniserver → Configuration** et
+   saisissez :
+   - l'**adresse** : `192.168.1.77`, ou `192.168.1.77:8080` si le Miniserver
+     n'écoute pas sur le port 80. `http://` fonctionne avec la Gen 1 et la
+     Gen 2 : le Miniserver chiffre lui-même la connexion. Une adresse
+     `https://` ne fonctionne qu'avec le nom CloudDNS Loxone d'une Gen 2, pas
+     avec son adresse IP (le certificat porte l'adresse CloudDNS) ;
+   - le **nom d'utilisateur** et le **mot de passe** de l'utilisateur
+     Loxone.
+4. Cliquez sur **Tester la connexion** : le Miniserver, sa génération et son
+   firmware, le nombre de blocs, les appareils proposés et les types de blocs
+   pas encore pris en charge s'affichent sous le bouton.
+5. Ouvrez l'onglet **Découverte** et ajoutez les appareils voulus.
 
 ## Ce que vous obtenez
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+| Dans Loxone                                         | Dans Gladys                                                                        |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Interrupteur, entrée virtuelle interrupteur         | un interrupteur (une lumière dans une catégorie de type « éclairage »)             |
+| Minuterie d'escalier / interrupteur multifonction   | marche/arrêt                                                                       |
+| Bouton poussoir, entrée virtuelle poussoir, scène   | marche/arrêt : marche envoie une impulsion ; chaque appui arrive dans Gladys       |
+| Variateur, variateur EIB                            | une lumière : marche/arrêt, luminosité                                             |
+| Contrôleur d'éclairage (LightControllerV2)          | un appareil avec ses ambiances (une liste), marche/arrêt et la luminosité générale |
+| … ses circuits d'éclairage                          | une lumière chacun : marche/arrêt, luminosité, couleur pour un circuit RGB         |
+| Stores, stores automatiques, rideaux (Jalousie)     | un volet ou un rideau : position (100 % = ouvert), ouvrir, fermer, stop            |
+| Stores, portails ou fenêtres centraux               | ouvrir, fermer, stop                                                               |
+| Portail, porte de garage                            | sa position, ouvrir, fermer, stop                                                  |
+| Fenêtre motorisée                                   | position (100 % = ouverte), ouvrir, fermer, stop                                   |
+| Régulateur de pièce intelligent (IRoomControllerV2) | température, consigne, mode (chauffage, froid, auto), préréglage                   |
+| État virtuel analogique (InfoOnlyAnalog)            | le capteur que dit son unité : température, humidité, lumière, puissance, énergie… |
+| État virtuel numérique (InfoOnlyDigital)            | un capteur d'ouverture (textes « ouvert » / « fermé »), de mouvement, ou un état   |
+| État virtuel texte (InfoOnlyText)                   | un texte                                                                           |
+| Compteur (Meter)                                    | puissance et énergie ; un compteur bidirectionnel comme compteur réseau            |
+| Détecteur de présence                               | un détecteur de mouvement                                                          |
 
-## Configuration
+Chaque appareil porte le nom de sa pièce : `Éclairage salon (Salon)`.
+Écartés : les blocs affichés seulement dans un schéma système, les blocs sans
+visualisation, et les types de blocs pas encore pris en charge (audio,
+alarme, interphone, programmateurs… : le test de connexion les nomme). Un bloc
+sécurisé (mot de passe de visualisation) ou en lecture seule est proposé en
+lecture seule.
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+### Ambiances
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+La liste **Ambiance** d'un contrôleur d'éclairage propose ses ambiances par
+leur nom, « Tout éteint » en premier. En choisir une la lance (les autres s'éteignent), comme
+dans l'application Loxone. Allumer le contrôleur lance « Tout allumé » quand
+elle existe, sinon votre première ambiance favorite. Une ambiance créée ou
+renommée apparaît dans la liste quelques secondes plus tard.
 
-## Actions
+### Régulateurs de pièce
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+- **Consigne** : Gladys lance une dérogation manuelle à cette température,
+  sans fin, comme le « manuel » de l'application Loxone. Le préréglage
+  **Schedule** (programme) met fin à la dérogation : la pièce suit de nouveau son
+  programme Loxone.
+- **Préréglage** : Économie, Confort, Protection du bâtiment (avec les noms
+  de votre configuration Loxone) lancent une dérogation de ce mode.
+- **Mode** : chauffage seul, froid seul, ou les deux (auto). Le choix
+  automatique ou manuel de Loxone est conservé. Éteindre un régulateur se
+  fait dans Loxone.
 
-## Scènes
+## Bon à savoir
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
-
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
-
-## Tableau de bord
-
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+- **Temps réel** : le Miniserver pousse chaque changement par son WebSocket ;
+  Gladys envoie ce qui a changé.
+- **Mesures** : un compteur remonte sa puissance toutes les quelques
+  secondes. Gladys garde la dernière mesure toutes les **Intervalle minimum
+  entre deux mesures d'un capteur** (10 s par défaut) ; interrupteurs,
+  lumières, stores, boutons et présence ne sont jamais retardés.
+- **Changements dans Loxone Config** : après l'enregistrement d'un nouveau
+  programme, le Miniserver redémarre et Gladys relit sa structure à la
+  reconnexion (et la vérifie toutes les 10 minutes) ; cliquez sur **Scanner**
+  dans Découverte pour forcer.
+- **Connexions** : le Miniserver accepte au plus 31 clients en temps réel
+  (applications, intégrations). Gladys en utilise un, et un de plus pendant
+  quelques secondes lors d'un test de connexion.
+- Le Miniserver **bloque une adresse** après plusieurs échecs de connexion :
+  après une erreur de mot de passe, Gladys ne réessaie que toutes les
+  5 minutes.
+- **Remote Connect** (un numéro de série au lieu d'une adresse) n'est pas
+  encore pris en charge : Gladys et le Miniserver doivent être sur le même
+  réseau.
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« a refusé le nom d'utilisateur ou le mot de passe »** : saisissez-les à
+  nouveau ; essayez-les dans l'application Loxone.
+- **« bloque cette adresse »** : attendez quelques minutes, vérifiez le mot de
+  passe.
+- **« injoignable »** : utilisez l'adresse IP du Miniserver sur le réseau
+  local (pas `localhost`), avec son port s'il n'est pas 80, et vérifiez que
+  la machine Gladys le joint.
+- **« certificat refusé »** : utilisez `http://` et l'adresse IP.
+- **« plus de connexion libre »** : fermez une application ou une autre
+  intégration connectée au Miniserver.
+- **Un bloc manque** : l'utilisateur Loxone le voit-il (sa pièce, ses
+  droits) ? Est-il affiché dans une liste de pièce (pas seulement dans un
+  schéma système) ? Son type est-il pris en charge (cliquez sur **Tester la
+  connexion**) ?
+- **Une commande échoue avec « may not control this block »** : donnez à
+  l'utilisateur Loxone le droit de le piloter, ou le bloc est protégé par un
+  mot de passe de visualisation (pas encore pris en charge).

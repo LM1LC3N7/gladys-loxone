@@ -1,61 +1,120 @@
-# Demo Devices Template
+# Loxone Miniserver
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+This integration connects Gladys to **your Loxone Miniserver** (Gen 1 or
+Gen 2, firmware 11.2 or later) on your local network and offers its blocks in
+the **Discovery** tab of Gladys: switches, dimmers, lighting controllers with
+their moods and light circuits, blinds and curtains, gates, motorized
+windows, intelligent room controllers, virtual states, meters and presence
+detectors. Once a device is added, its states follow the Miniserver live, and
+Gladys controls it **through the Miniserver**, which keeps running: your
+Loxone Config program, your Loxone app and your automations stay as they
+are. Unofficial, not affiliated with Loxone.
+
+> **Development version (0.1).** Written from Loxone's API documents and built
+> on the loxone-ts-api library, not yet tested on a real Miniserver. Your
+> feedback is welcome on the GitHub repository.
+
+## Setup
+
+1. **Create a user for Gladys** in Loxone Config (Users and permissions),
+   with a password, and give it the rooms and blocks Gladys may see and
+   control. A dedicated user is advised: Gladys sees exactly what this user
+   sees, and you can revoke it without touching your own account. Save the
+   program to the Miniserver.
+2. Find the **IP address** of the Miniserver (Loxone Config, or your router)
+   and give it a fixed address in your router.
+3. In Gladys, open **Integrations → Loxone Miniserver → Configuration** and
+   type:
+   - the **address**: `192.168.1.77`, or `192.168.1.77:8080` when the
+     Miniserver does not listen on port 80. `http://` works with Gen 1 and
+     Gen 2: the Miniserver encrypts the login itself. An `https://` address
+     only works with the Loxone CloudDNS name of a Gen 2, not with its IP
+     address (the certificate names the CloudDNS address);
+   - the **user name** and **password** of the Loxone user.
+4. Press **Test the connection**: the Miniserver, its generation and firmware,
+   the number of blocks, the devices offered and the block types not
+   supported yet show up under the button.
+5. Open the **Discovery** tab and add the devices you want.
 
 ## What you get
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+| In Loxone                                       | In Gladys                                                                   |
+| ----------------------------------------------- | --------------------------------------------------------------------------- |
+| Switch, virtual input switch                    | a switch (a light in a category of the "lights" type)                       |
+| Stairwell / multifunction switch (TimedSwitch)  | on/off                                                                      |
+| Push button, virtual push button, scene         | on/off: on sends a pulse; every press reaches Gladys                        |
+| Dimmer, EIB dimmer                              | a light: on/off, brightness                                                 |
+| Lighting controller (LightControllerV2)         | a device with its moods (a list), on/off and the master brightness          |
+| … its light circuits                            | one light each: on/off, brightness, color for an RGB circuit                |
+| Blinds, automatic blinds, curtains (Jalousie)   | a shutter or a curtain: position (100 % = open), open, close, stop          |
+| Central blinds, central gates, central windows  | open, close, stop                                                           |
+| Gate, garage door                               | its position, open, close, stop                                             |
+| Motorized window                                | position (100 % = open), open, close, stop                                  |
+| Intelligent room controller (IRoomControllerV2) | temperature, setpoint, mode (heating, cooling, auto), preset                |
+| Virtual state, analog (InfoOnlyAnalog)          | the sensor its unit says: temperature, humidity, light, power, energy, CO2… |
+| Virtual state, digital (InfoOnlyDigital)        | an opening sensor (texts "open" / "closed"), a motion sensor, or a state    |
+| Virtual state, text (InfoOnlyText)              | a text                                                                      |
+| Utility meter (Meter)                           | power and energy; a bidirectional meter as a grid meter (import / export)   |
+| Presence detector                               | a motion sensor                                                             |
 
-## Configuration
+Each device is named after its room: `Living room lights (Living room)`. Left
+out: the blocks shown only in a system scheme, the blocks without a
+visualization, and the block types not supported yet (audio, alarm, intercom,
+daytimers…: the connection test names them). A secured block (visualisation
+password) and a read-only one are offered read-only.
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+### Moods
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+The **Mood** list of a lighting controller offers its moods by name, the
+"all off" one first. Choosing one runs it (the other moods are turned off), as the Loxone
+app does. Turning the controller on runs "All on" when it exists, otherwise
+your first favorite mood. A new or renamed mood shows up in the list a few
+seconds later.
 
-## Actions
+### Room controllers
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+- **Setpoint**: Gladys starts a manual override at this temperature, with no
+  end, as the Loxone app does with "manual". The **Schedule** preset ends the
+  override: the room follows its Loxone schedule again.
+- **Preset**: Economy, Comfort, Building protection (with the names of your
+  Loxone configuration) start an override of that mode.
+- **Mode**: heating only, cooling only, or both (auto). The automatic or
+  manual choice of Loxone is kept. Turning a room controller off is done in
+  Loxone.
 
-## Scenes
+## Good to know
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
-
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
-
-## Dashboard
-
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+- **Live**: the Miniserver pushes every change through its WebSocket; Gladys
+  sends what changed.
+- **Measurements**: a meter reports its power every few seconds. Gladys keeps
+  the last reading every **Minimum interval between two readings of a
+  sensor** (10 s by default); switches, lights, blinds, buttons and presence
+  are never delayed.
+- **Changes in Loxone Config**: after you save a new program, the Miniserver
+  restarts and Gladys reads its structure again at the reconnection (and
+  checks it every 10 minutes); press **Scan** in Discovery to force it.
+- **Connections**: the Miniserver accepts 31 live clients at most (apps,
+  integrations). Gladys uses one, and one more for a few seconds during a
+  connection test.
+- The Miniserver **blocks an address** after repeated failed logins: after a
+  password error, Gladys only retries every 5 minutes.
+- **Remote Connect** (a serial number instead of an address) is not
+  supported yet: Gladys and the Miniserver must be on the same network.
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **"refused the user name or the password"**: type them again; try them in
+  the Loxone app.
+- **"blocks this address"**: wait a few minutes, check the password.
+- **"unreachable"**: use the IP address of the Miniserver on the local
+  network (not `localhost`), with its port when it is not 80, and check that
+  the Gladys machine reaches it.
+- **"certificate refused"**: use `http://` and the IP address.
+- **"no free connection"**: close an app or another integration connected to
+  the Miniserver.
+- **A block is missing**: may the Loxone user see it (its room, its
+  permissions)? Is it shown in a room list (not only in a system scheme)? Is
+  its type supported (press **Test the connection**)?
+- **A command fails with "may not control this block"**: give the Loxone user
+  the right to control it, or the block is secured by a visualisation
+  password (not supported yet).

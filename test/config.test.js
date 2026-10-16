@@ -1,33 +1,39 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeConfig, DEFAULT_CONFIG } from '../src/config.js';
+import { DEFAULTS, normalizeConfig, parseAddress } from '../src/config.js';
 
-test('normalizeConfig returns the defaults when called with no argument', () => {
-  assert.deepEqual(normalizeConfig(), DEFAULT_CONFIG);
+test('the address of the Miniserver, as users type it', () => {
+  assert.deepEqual(parseAddress('192.168.1.77'), { origin: 'http://192.168.1.77' });
+  assert.deepEqual(parseAddress(' 192.168.1.77:8080 '), { origin: 'http://192.168.1.77:8080' });
+  assert.deepEqual(parseAddress('http://miniserver.lan/'), { origin: 'http://miniserver.lan' });
+  assert.deepEqual(parseAddress('https://192-168-1-77.504f94a0b1c2.dyndns.loxonecloud.com'), {
+    origin: 'https://192-168-1-77.504f94a0b1c2.dyndns.loxonecloud.com',
+  });
+  assert.deepEqual(parseAddress('http://192.168.1.77/#/home'), { origin: 'http://192.168.1.77' });
+  assert.deepEqual(parseAddress(''), { error: 'empty' });
+  assert.deepEqual(parseAddress('ftp://192.168.1.77'), { error: 'invalid' });
+  assert.deepEqual(parseAddress('http://admin:pw@192.168.1.77'), { error: 'credentials' });
+  // A serial number means Remote Connect, through the Loxone cloud: not in this version.
+  assert.deepEqual(parseAddress('504F94A0B1C2'), { error: 'serial' });
+  assert.deepEqual(parseAddress('50:4F:94:A0:B1:C2'), { error: 'serial' });
 });
 
-test('normalizeConfig keeps user values over the defaults', () => {
-  const config = normalizeConfig({ latitude: 45.5, longitude: -73.6, unit: 'fahrenheit' });
-  assert.equal(config.latitude, 45.5);
-  assert.equal(config.longitude, -73.6);
-  assert.equal(config.unit, 'fahrenheit');
-});
-
-test('normalizeConfig coerces numeric strings coming from a form', () => {
-  const config = normalizeConfig({ latitude: '48.8', longitude: '2.3', poll_frequency: '600' });
-  assert.equal(config.latitude, 48.8);
-  assert.equal(config.longitude, 2.3);
-  assert.equal(config.poll_frequency, 600);
-  assert.equal(typeof config.poll_frequency, 'number');
-});
-
-test('normalizeConfig falls back to the default for a missing numeric field', () => {
-  const config = normalizeConfig({ unit: 'celsius' });
-  assert.equal(config.poll_frequency, DEFAULT_CONFIG.poll_frequency);
-});
-
-test('GLADYS_PREFER_LOCAL defaults to true and only an explicit false disables it', () => {
-  assert.equal(normalizeConfig().GLADYS_PREFER_LOCAL, true);
-  assert.equal(normalizeConfig({ GLADYS_PREFER_LOCAL: true }).GLADYS_PREFER_LOCAL, true);
-  assert.equal(normalizeConfig({ GLADYS_PREFER_LOCAL: false }).GLADYS_PREFER_LOCAL, false);
+test('normalizeConfig: defaults, errors in order, bounded interval', () => {
+  assert.equal(normalizeConfig().error, 'empty');
+  assert.equal(normalizeConfig({ host: '192.168.1.77' }).error, 'no-user');
+  assert.equal(
+    normalizeConfig({ host: '192.168.1.77', username: ' gladys ' }).error,
+    'no-password',
+  );
+  const c = normalizeConfig({
+    host: '192.168.1.77',
+    username: ' gladys ',
+    password: ' p ',
+    sensor_interval: '900',
+  });
+  assert.equal(c.error, undefined);
+  assert.equal(c.username, 'gladys');
+  assert.equal(c.password, ' p ', 'a password is kept as typed');
+  assert.equal(c.sensorInterval, 300);
+  assert.equal(normalizeConfig({ sensor_interval: null }).sensorInterval, DEFAULTS.sensor_interval);
 });

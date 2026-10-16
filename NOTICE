@@ -1,0 +1,29 @@
+gladys-loxone
+Copyright 2026 LM1LC3N7 and the gladys-loxone contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+At runtime it uses (npm dependencies, not included in this repository):
+
+- loxone-ts-api, https://github.com/andrasg/loxone-ts-api
+  Copyright (c) 2025 Andras Gaal, MIT License.
+- node-ansi-logger, https://github.com/Luligu/node-ansi-logger
+  Apache License, Version 2.0.
+- ws, https://github.com/websockets/ws, MIT License (through both).
+
+The behaviour of the Loxone controls (moods, master brightness, blinds at
+their end positions, the room controller override) was read in these
+projects, used as documentation only (no code included):
+
+- matterbridge-loxone, https://github.com/andrasg/matterbridge-loxone,
+  MIT License.
+- homebridge-loxone-proxy, https://github.com/rudyberends/homebridge-loxone-proxy,
+  Apache License, Version 2.0.
+- ioBroker.loxone, https://github.com/UncleSamSwiss/ioBroker.loxone,
+  Apache License, Version 2.0.
+
+The control types, states and commands follow Loxone's "Structure File" and
+"Communicating with the Miniserver" documents.
+
+Loxone and Miniserver are trademarks of Loxone Electronics GmbH. This project
+is unofficial, not affiliated with Loxone.

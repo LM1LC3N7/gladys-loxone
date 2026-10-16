@@ -7,10 +7,11 @@
 #   2. ESLint    -> catch real mistakes (undefined vars, dead code, ...);
 #   3. Tests     -> `node --test`, the built-in runner (no extra dependency).
 #
-# They run on Node 22 (the oldest version `engines` accepts) and Node 24 (the
-# one the Docker image ships with, see the Dockerfile). The image is built too
-# (amd64 only, never pushed), so a broken Dockerfile shows up here rather than
-# in a release.
+# They run on Node 24 (the oldest version `engines` accepts, as loxone-ts-api
+# requires it, and the one the Docker image ships with, see the Dockerfile) and
+# Node 26 (the other line the library supports). The image is built too (amd64
+# only, never pushed), so a broken Dockerfile shows up here rather than in a
+# release.
 #
 # The store validator (`npx github:GladysAssistant/integration-store .`) is not
 # a gate here: it also checks that the manifest's `docker_image` exists on its
@@ -36,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22, 24]
+        node-version: [24, 26]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -44,7 +45,7 @@ jobs:
           persist-credentials: false # no git push here
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
