@@ -18,7 +18,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@gladysassistant/integration-sdk": "^0.15.0",
+    "@gladysassistant/integration-sdk": "^0.16.0",
     "loxone-ts-api": "^2.1.1",
     "node-ansi-logger": "^3.3.1"
   },
